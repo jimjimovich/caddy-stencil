@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ .Doc.title }}</title>
+    </head>
+    <body>
+        {{ if .PathMatches "/api/location/search/" }}
+        
+            <ul>
+                {{ range .Doc.data }}
+                    <li><a href="/api/location/{{ .woeid }}/">{{ .title }}</a></li>
+                {{ end }}
+            </ul>
+        
+        {{ else }}
+            <h1>{{ .Doc.title }} Weather</h1>
+            <ul>
+                {{ range .Doc.consolidated_weather }}
+                    <li>{{ .applicable_date }} - 
+                        {{ .weather_state_name }} - 
+                        {{`{{ .Truncate  "`}} {{.min_temp}} {{`" 6 }}`}} - {{`{{ .Truncate  "`}} {{.max_temp}} {{`" 6 }}`}} &deg; C
+                    </li>
+                {{ end }}
+            </ul>
+        {{ end }}
+    </body>
+</html>

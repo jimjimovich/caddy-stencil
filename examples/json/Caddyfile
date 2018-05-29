@@ -1,0 +1,12 @@
+0.0.0.0:8080
+gzip
+proxy /api/ https://www.metaweather.com/api/ {
+    header_upstream  -Accept-Encoding
+}
+stencil / {
+    ext .json
+    template    template.html
+}
+templates / {
+    ext .json
+}
