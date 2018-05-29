@@ -5,13 +5,11 @@
     </head>
     <body>
         {{ if .PathMatches "/api/location/search/" }}
-        
             <ul>
                 {{ range .Doc.data }}
                     <li><a href="/api/location/{{ .woeid }}/">{{ .title }}</a></li>
                 {{ end }}
             </ul>
-        
         {{ else }}
             <h1>{{ .Doc.title }} Weather</h1>
             <ul>

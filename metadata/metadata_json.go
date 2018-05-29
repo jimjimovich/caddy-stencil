@@ -68,7 +68,7 @@ func (j *JSONParser) Init(b *bytes.Buffer) bool {
 				return false
 			}
 			j.metadata = NewMetadata(m)
-			j.html = bytes.NewBuffer(b.Bytes())
+			j.html = bytes.NewBuffer([]byte{})
 			return true
 		}
 
