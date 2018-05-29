@@ -33,7 +33,6 @@
 package metadata
 
 import (
-	"bufio"
 	"bytes"
 	"time"
 )
@@ -129,48 +128,4 @@ func parsers() []Parser {
 		// This one must be last
 		&NoneParser{},
 	}
-}
-
-// Split out prefixed/suffixed metadata with given delimiter
-func splitBuffer(b *bytes.Buffer, delim string) (*bytes.Buffer, *bytes.Buffer) {
-	scanner := bufio.NewScanner(b)
-
-	// Read and check first line
-	if !scanner.Scan() {
-		return nil, nil
-	}
-	if string(bytes.TrimSpace(scanner.Bytes())) != delim {
-		return nil, nil
-	}
-
-	// Accumulate metadata, until delimiter
-	meta := bytes.NewBuffer(nil)
-	for scanner.Scan() {
-		if string(bytes.TrimSpace(scanner.Bytes())) == delim {
-			break
-		}
-		if _, err := meta.Write(scanner.Bytes()); err != nil {
-			return nil, nil
-		}
-		if _, err := meta.WriteRune('\n'); err != nil {
-			return nil, nil
-		}
-	}
-	// Make sure we saw closing delimiter
-	if string(bytes.TrimSpace(scanner.Bytes())) != delim {
-		return nil, nil
-	}
-
-	// The rest is html
-	html := new(bytes.Buffer)
-	for scanner.Scan() {
-		if _, err := html.Write(scanner.Bytes()); err != nil {
-			return nil, nil
-		}
-		if _, err := html.WriteRune('\n'); err != nil {
-			return nil, nil
-		}
-	}
-
-	return meta, html
 }

@@ -57,10 +57,28 @@ func (j *JSONParser) Init(b *bytes.Buffer) bool {
 		var offset int
 
 		jerr, ok := err.(*json.SyntaxError)
-		if !ok {
+		if jerr == nil && !ok {
+			// We have an error that is not a syntax error
+			// Try to wrapp the json (probably an array) in { data: }
+			sb := b.Bytes()
+			sb = append([]byte(`{ "data": `), sb...)
+			sb = append(sb, '}')
+			err = json.Unmarshal(sb, &m)
+			if err != nil {
+				return false
+			}
+			j.metadata = NewMetadata(m)
+			j.html = bytes.NewBuffer(b.Bytes())
+			return true
+		}
+
+		if jerr != nil && !ok {
+			// Seems like we don't have json
 			return false
 		}
 
+		// If we got this far, We have a syntax error, which probably means
+		// that we have data after our json, which should be added to .Doc.body
 		offset = int(jerr.Offset)
 
 		m = make(map[string]interface{})
