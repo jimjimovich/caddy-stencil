@@ -11,26 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-// Adapted from the Caddy markdown plugin by Light Code Labs, LLC.
-// Significant modifications have been made.
-//
-// Original License
-// Copyright 2015 Light Code Labs, LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
-// Package stencil is middleware to render HTML and/or JSON into templates
 package stencil
 
 import (
@@ -148,7 +129,7 @@ func (st Stencil) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error)
 	ctx.Req = r
 	ctx.URL = r.URL
 
-	html, err := cfg.Stencil(title(fpath), rb.Buffer.Bytes(), ctx)
+	html, err := cfg.Stencil(title(fpath), rb.Buffer.String(), ctx)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}

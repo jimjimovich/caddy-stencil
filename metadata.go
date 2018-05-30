@@ -30,45 +30,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package metadata
+package stencil
 
-import (
-	"bytes"
-)
+// Metadata stores a page's metadata
+type Metadata struct {
+	// Page title
+	Title string
 
-// NoneParser is the parser for html with no metadata.
-type NoneParser struct {
-	metadata Metadata
-	html     *bytes.Buffer
+	// Page template
+	Template string
+
+	// Variables to be used with Template
+	Variables map[string]interface{}
 }
 
-// Type returns the kind of parser this struct is.
-func (n *NoneParser) Type() string {
-	return "None"
+// NewMetadata returns a new Metadata struct, loaded with the given map
+func NewMetadata(parsedMap map[string]interface{}) Metadata {
+	md := Metadata{
+		Variables: make(map[string]interface{}),
+	}
+	md.load(parsedMap)
+
+	return md
 }
 
-// Init prepases and parses the metadata and html
-func (n *NoneParser) Init(b *bytes.Buffer) bool {
-	m := make(map[string]interface{})
-	n.metadata = NewMetadata(m)
-	n.html = bytes.NewBuffer(b.Bytes())
+// load loads parsed values in parsedMap into Metadata
+func (m *Metadata) load(parsedMap map[string]interface{}) {
 
-	return true
-}
-
-// Parse the metadata
-func (n *NoneParser) Parse(b []byte) ([]byte, error) {
-	return nil, nil
-}
-
-// Metadata returns parsed metadata.  It should be called
-// only after a call to Parse returns without error.
-func (n *NoneParser) Metadata() Metadata {
-	return n.metadata
-}
-
-// Content returns html.  It should be called
-// only after a call to Parse returns without error.
-func (n *NoneParser) Content() []byte {
-	return n.html.Bytes()
+	// Pull top level things out
+	if title, ok := parsedMap["title"]; ok {
+		m.Title, _ = title.(string)
+	}
+	if template, ok := parsedMap["template"]; ok {
+		m.Template, _ = template.(string)
+	}
+	m.Variables = parsedMap
 }
