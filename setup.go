@@ -16,6 +16,7 @@ package stencil
 
 import (
 	"bytes"
+	"mime"
 	"net/http"
 	"path/filepath"
 	"sync"
@@ -39,6 +40,9 @@ func setup(c *caddy.Controller) error {
 	}
 
 	cfg := httpserver.GetConfig(c)
+
+	// Add json mime type in case it is not available on the system
+	mime.AddExtensionType(".json", "application/json")
 
 	st := Stencil{
 		Root:    cfg.Root,
