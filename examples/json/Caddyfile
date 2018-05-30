@@ -7,6 +7,3 @@ stencil / {
     ext .json
     template    template.html
 }
-templates / {
-    ext .json
-}

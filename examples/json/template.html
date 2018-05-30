@@ -16,7 +16,7 @@
                 {{ range .Doc.consolidated_weather }}
                     <li>{{ .applicable_date }} - 
                         {{ .weather_state_name }} - 
-                        {{`{{ .Truncate  "`}} {{.min_temp}} {{`" 6 }}`}} - {{`{{ .Truncate  "`}} {{.max_temp}} {{`" 6 }}`}} &deg; C
+                        {{ $.Truncate (print .min_temp) 4 }} - {{ $.Truncate (print .max_temp) 4 }} &deg; C
                     </li>
                 {{ end }}
             </ul>
