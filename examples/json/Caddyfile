@@ -3,6 +3,7 @@ gzip
 proxy /api/ https://www.metaweather.com/api/ {
     header_upstream  -Accept-Encoding
 }
+proxy /static/ https://www.metaweather.com/
 stencil / {
     ext .json
     template    template.html
