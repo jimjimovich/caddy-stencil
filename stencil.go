@@ -103,7 +103,7 @@ func (st Stencil) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error)
 			if reqExt == "" {
 				// request has no extension, so check response Content-Type
 				ct := mime.TypeByExtension(ext)
-				if ct != "" && strings.Contains(header.Get("Content-Type"), ct) {
+				if ct != "" && strings.Contains(ct, header.Get("Content-Type")) {
 					return true
 				}
 			} else if reqExt == ext {
