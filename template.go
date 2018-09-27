@@ -76,22 +76,22 @@ func execTemplate(c *Config, mdata Metadata, ctx httpserver.Context) ([]byte, er
 			return nil
 		}
 
-		currentFileInfo, err := os.Lstat(templateFile.path)
+		currentFileInfo, err := os.Lstat(templateFile.Path)
 		if err != nil {
 			return err
 		}
 
-		if !fileChanged(currentFileInfo, templateFile.fi) {
+		if !fileChanged(currentFileInfo, templateFile.Fi) {
 			return nil
 		}
 
 		// update template due to file changes
-		err = SetTemplate(c.Template, templateName, templateFile.path)
+		err = SetTemplate(c.Template, templateName, templateFile.Path)
 		if err != nil {
 			return err
 		}
 
-		templateFile.fi = currentFileInfo
+		templateFile.Fi = currentFileInfo
 		return nil
 	}
 

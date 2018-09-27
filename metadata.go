@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Adapted from the Caddy Stencil plugin by Light Code Labs, LLC.
+// Adapted from the Caddy Markdown plugin by Light Code Labs, LLC.
 // Significant modifications have been made.
 //
 // Original License

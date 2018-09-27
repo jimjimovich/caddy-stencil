@@ -1,6 +1,0 @@
-0.0.0.0:8080
-gzip
-stencil / {
-    ext .html
-    template    template.html
-}

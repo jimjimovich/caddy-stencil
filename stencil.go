@@ -56,12 +56,12 @@ type Config struct {
 	Template *template.Template
 
 	// a pair of template's name and its underlying file information
-	TemplateFiles map[string]*cachedFileInfo
+	TemplateFiles map[string]*CachedFileInfo
 }
 
-type cachedFileInfo struct {
-	path string
-	fi   os.FileInfo
+type CachedFileInfo struct {
+	Path string
+	Fi   os.FileInfo
 }
 
 // ServeHTTP implements the http.Handler interface.
@@ -129,7 +129,7 @@ func (st Stencil) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error)
 	ctx.Req = r
 	ctx.URL = r.URL
 
-	html, err := cfg.Stencil(title(fpath), rb.Buffer.String(), ctx)
+	html, err := cfg.Stencil(title(fpath), rb.Buffer, ctx)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}

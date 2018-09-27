@@ -28,12 +28,12 @@ import (
 func init() {
 	caddy.RegisterPlugin("stencil", caddy.Plugin{
 		ServerType: "http",
-		Action:     setup,
+		Action:     Setup,
 	})
 }
 
 // setup configures a new Stencil middleware instance.
-func setup(c *caddy.Controller) error {
+func Setup(c *caddy.Controller) error {
 	stconfigs, err := stencilParse(c)
 	if err != nil {
 		return err
@@ -70,7 +70,7 @@ func stencilParse(c *caddy.Controller) ([]*Config, error) {
 		st := &Config{
 			Extensions:    make(map[string]struct{}),
 			Template:      GetDefaultTemplate(),
-			TemplateFiles: make(map[string]*cachedFileInfo),
+			TemplateFiles: make(map[string]*CachedFileInfo),
 		}
 
 		// Get the path scope
@@ -89,6 +89,12 @@ func stencilParse(c *caddy.Controller) ([]*Config, error) {
 			if err := loadParams(c, st); err != nil {
 				return stconfigs, err
 			}
+		}
+
+		// If no extensions were specified, assume some defaults
+		if len(st.Extensions) == 0 {
+			st.Extensions[".html"] = struct{}{}
+			st.Extensions[".json"] = struct{}{}
 		}
 
 		stconfigs = append(stconfigs, st)
@@ -118,8 +124,8 @@ func loadParams(c *caddy.Controller, stc *Config) error {
 				return c.Errf("default template parse error: %v", err)
 			}
 
-			stc.TemplateFiles[""] = &cachedFileInfo{
-				path: fpath,
+			stc.TemplateFiles[""] = &CachedFileInfo{
+				Path: fpath,
 			}
 			return nil
 		case 2:
@@ -129,36 +135,12 @@ func loadParams(c *caddy.Controller, stc *Config) error {
 				return c.Errf("template parse error: %v", err)
 			}
 
-			stc.TemplateFiles[tArgs[0]] = &cachedFileInfo{
-				path: fpath,
+			stc.TemplateFiles[tArgs[0]] = &CachedFileInfo{
+				Path: fpath,
 			}
 			return nil
 		}
-	case "templatedir":
-		if !c.NextArg() {
-			return c.ArgErr()
-		}
-
-		pattern := c.Val()
-		_, err := stc.Template.ParseGlob(pattern)
-		if err != nil {
-			return c.Errf("template load error: %v", err)
-		}
-		if c.NextArg() {
-			return c.ArgErr()
-		}
-
-		paths, err := filepath.Glob(pattern)
-		if err != nil {
-			return c.Errf("glob %q failed: %v", pattern, err)
-		}
-		for _, path := range paths {
-			stc.TemplateFiles[filepath.Base(path)] = &cachedFileInfo{
-				path: path,
-			}
-		}
-		return nil
 	default:
-		return c.Err("Expected valid markdown configuration property")
+		return c.Err("Expected valid stencil configuration")
 	}
 }

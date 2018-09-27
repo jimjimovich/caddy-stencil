@@ -17,6 +17,7 @@ package stencil
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -32,12 +33,12 @@ type FileInfo struct {
 
 // Stencil processes the contents of a page in b. It parses the metadata
 // (if any) and uses the template (if found).
-func (c *Config) Stencil(title string, body string, ctx httpserver.Context) ([]byte, error) {
-	mdata, err := parseBody(strings.NewReader(body), false)
+func (c *Config) Stencil(title string, body io.Reader, ctx httpserver.Context) ([]byte, error) {
+	mdata, err := parseBody(body, false)
 	if err != nil {
 		// If the error is because of a JSON array, retry to process as array
 		if strings.Contains(err.Error(), "cannot unmarshal array") {
-			mdata, _ := parseBody(strings.NewReader(body), true)
+			mdata, _ := parseBody(body, true)
 			return execTemplate(c, mdata, ctx)
 		}
 	}
@@ -88,9 +89,13 @@ func parseBody(body io.Reader, array bool) (Metadata, error) {
 	} else {
 		mdata := NewMetadata(b)
 		if d.More() {
+			// var buf bytes.Buffer
+
 			buf := new(bytes.Buffer)
 			buf.ReadFrom(d.Buffered())
 			mdataBody := buf.String()
+			fmt.Println(mdataBody)
+
 			mdata.Variables["body"] = mdataBody
 		}
 		return mdata, nil
