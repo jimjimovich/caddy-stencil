@@ -2,9 +2,9 @@
 
 **Stencil is currently NOT stable (or even working!!!) and not recommended for use in production!**
 
-Stencil is a templating middleware for Caddy server. It can be used with static files or combined or other middlewares (for example, proxy) to insert HTML, JSON, or HTML with JSON front matter into a pre-defined template.
+Stencil is a templating middleware for Caddy server. Stencil can process three types of input: raw HTML (or any other text-based format), raw HTML with JSON front matter, and valid JSON. This input can be from files or the result of another directive such as the Proxy directive.
 
-Stencil is based on the Markdown plugin for Caddy but plans to focus on the integration of backend services and APIs and does not process Markdown.
+Stencil processes input and runs it through pre-defined templates. Any JSON data is placed in the .Doc.data variable for templates. The entire body of HTML input with or without front matter will is placed in the .Doc.body variable. The variable .Doc.title is either assigned by a root level JSON entry of "title" or automatically generated based on the file name.
 
 ### Syntax
 
@@ -18,10 +18,6 @@ stencil [basepath] {
 - **basepath** is the base path to match. Markdown will not activate if the request URL is not prefixed with this path. Default is site root.
 - **extensions...** is a space-delimited list of file extensions to process with Stencil (defaults to .html, and .json).
 - **template** defines a template with the given name to be at the given path. To specify the default template, omit name. Content can choose a template by using the name in its front matter or JSON.
-
-The Stencil plugin can process three types of input: raw HTML (or any other text-based format), raw HTML with JSON front matter,  and valid JSON. This input can be from files or the result of another directive such as the [Proxy directive](https://caddyserver.com/docs/proxy).  
-
-Stencil processes input and runs it through pre-defined templates. Any JSON data is placed in the .Doc.data variable for templates. The entire body of HTML input with or without front matter will is placed in the .Doc.body variable. The variable .Doc.title is either assigned by a root level JSON entry of "title" or automatically generated based on the file name.
 
 ### Processing HTML
 Stencil can be used to inject raw HTML or any text into templates. This may be useful for integrating legacy systems that don't have a JSON API into a modern website.  The entire body of the document will be placed into the .Doc.body variable for use in your templates. 
