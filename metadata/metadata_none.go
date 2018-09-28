@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 // Adapted from the Caddy Markdown plugin by Light Code Labs, LLC.
-// Significant modifications have been made.
 //
 // Original License
+//
 // Copyright 2015 Light Code Labs, LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,40 +30,45 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package stencil
+package metadata
 
-// Metadata stores a page's metadata
-type Metadata struct {
-	// Page title
-	Title string
+import (
+	"bytes"
+)
 
-	// Page template
-	Template string
-
-	// Variables to be used with Template
-	Variables map[string]interface{}
+// NoneParser is the parser for plaintext with no metadata.
+type NoneParser struct {
+	metadata Metadata
+	body     *bytes.Buffer
 }
 
-// NewMetadata returns a new Metadata struct, loaded with the given map
-func NewMetadata(parsedMap map[string]interface{}) Metadata {
-	md := Metadata{
-		Variables: make(map[string]interface{}),
-	}
-	md.load(parsedMap)
-
-	return md
+// Type returns the kind of parser this struct is.
+func (n *NoneParser) Type() string {
+	return "None"
 }
 
-// load loads parsed values in parsedMap into Metadata
-func (m *Metadata) load(parsedMap map[string]interface{}) {
+// Init prepases and parses the metadata and body
+func (n *NoneParser) Init(b *bytes.Buffer) bool {
+	m := make(map[string]interface{})
+	n.metadata = NewMetadata(m)
+	n.body = bytes.NewBuffer(b.Bytes())
 
-	// Pull top level things out
-	if title, ok := parsedMap["title"]; ok {
-		m.Title, _ = title.(string)
-	}
-	// TODO: make template variable customizable in config
-	if template, ok := parsedMap["template"]; ok {
-		m.Template, _ = template.(string)
-	}
-	m.Variables = parsedMap
+	return true
+}
+
+// Parse the metadata
+func (n *NoneParser) Parse(b []byte) ([]byte, error) {
+	return nil, nil
+}
+
+// Metadata returns parsed metadata.  It should be called
+// only after a call to Parse returns without error.
+func (n *NoneParser) Metadata() Metadata {
+	return n.metadata
+}
+
+// Body returns parsed body.  It should be called
+// only after a call to Parse returns without error.
+func (n *NoneParser) Body() []byte {
+	return n.body.Bytes()
 }

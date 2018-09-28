@@ -15,13 +15,11 @@
 package stencil
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
-	"strings"
 
+	"github.com/jimjimovich/caddy-stencil/metadata"
 	"github.com/mholt/caddy/caddyhttp/httpserver"
 )
 
@@ -31,73 +29,26 @@ type FileInfo struct {
 	ctx httpserver.Context
 }
 
-// Stencil processes the contents of a page in b. It parses the metadata
+// Stencil processes the contents of a page in r. It parses the metadata
 // (if any) and uses the template (if found).
-func (c *Config) Stencil(title string, body io.Reader, ctx httpserver.Context) ([]byte, error) {
-	mdata, err := parseBody(body, false)
+func (c *Config) Stencil(title string, r io.Reader, ctx httpserver.Context) ([]byte, error) {
+	contents, err := ioutil.ReadAll(r)
 	if err != nil {
-		// If the error is because of a JSON array, retry to process as array
-		if strings.Contains(err.Error(), "cannot unmarshal array") {
-			mdata, _ := parseBody(body, true)
-			return execTemplate(c, mdata, ctx)
-		}
+		return nil, err
+	}
+
+	parser := metadata.GetParser(contents)
+	body := parser.Body()
+	mdata := parser.Metadata()
+
+	// set it as body for template
+	mdata.Variables["body"] = string(body)
+
+	// fixup title
+	mdata.Variables["title"] = mdata.Title
+	if mdata.Variables["title"] == "" {
+		mdata.Variables["title"] = title
 	}
 
 	return execTemplate(c, mdata, ctx)
-}
-
-func parseBody(body io.Reader, array bool) (Metadata, error) {
-	d := json.NewDecoder(body)
-	d.UseNumber()
-
-	var b map[string]interface{}
-	var a interface{}
-
-	if array {
-		if err := d.Decode(&a); err != nil {
-			return Metadata{}, err
-		}
-	} else {
-		if err := d.Decode(&b); err != nil {
-			// If invalid character, put whole body into the body variable
-			if strings.Contains(err.Error(), "invalid character") {
-				mdata := Metadata{
-					Variables: make(map[string]interface{}),
-				}
-				buf := new(bytes.Buffer)
-				buf.ReadFrom(d.Buffered())
-				mdataBody := buf.String()
-				mdata.Variables["body"] = mdataBody
-				return mdata, nil
-			}
-			return Metadata{}, err
-		}
-	}
-
-	// No error decoding, so we have JSON or JSON + body
-	if array {
-		metaMap := make(map[string]interface{})
-		metaMap["data"] = a
-		mdata := NewMetadata(metaMap)
-		if d.More() {
-			buf := new(bytes.Buffer)
-			buf.ReadFrom(d.Buffered())
-			mdataBody := buf.String()
-			mdata.Variables["body"] = mdataBody
-		}
-		return mdata, nil
-	} else {
-		mdata := NewMetadata(b)
-		if d.More() {
-			// var buf bytes.Buffer
-
-			buf := new(bytes.Buffer)
-			buf.ReadFrom(d.Buffered())
-			mdataBody := buf.String()
-			fmt.Println(mdataBody)
-
-			mdata.Variables["body"] = mdataBody
-		}
-		return mdata, nil
-	}
 }
