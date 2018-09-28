@@ -32,6 +32,7 @@ func TestSetup(t *testing.T) {
 		shouldErr      bool
 		expectedConfig []stencil.Config
 	}{
+		// Config with only defaults
 		{
 			"stencil /",
 			false,
@@ -44,11 +45,13 @@ func TestSetup(t *testing.T) {
 				Template:      stencil.GetDefaultTemplate(),
 				TemplateFiles: make(map[string]*stencil.CachedFileInfo),
 			}}},
+		// Config with named template, ext configured, and multiple entries
 		{
 			`
 				stencil /blog
 				stensil /test {
 					template test ./testdata/index.html
+					ext .txt .html
 				}
 			`,
 			false,
@@ -64,8 +67,8 @@ func TestSetup(t *testing.T) {
 				{
 					PathScope: "/test",
 					Extensions: map[string]struct{}{
+						".txt":  {},
 						".html": {},
-						".json": {},
 					},
 					Template: buildTemplate(map[string]string{
 						"test": "testdata/index.html",
@@ -104,7 +107,11 @@ func TestSetup(t *testing.T) {
 				t.Errorf("Expected %v PathScope, but got %v", test.expectedConfig[j].PathScope, singleConfig.PathScope)
 			}
 
-			// // Test extensions
+			// Test extensions
+			if len(test.expectedConfig[j].Extensions) != len(singleConfig.Extensions) {
+				t.Errorf("Expected %v extensions, got: %v", len(test.expectedConfig[j].Extensions), len(singleConfig.Extensions))
+			}
+
 			for v, _ := range test.expectedConfig[j].Extensions {
 				if _, ok := singleConfig.Extensions[v]; !ok {
 					t.Errorf("Expected extensions to contain %v", v)
@@ -118,17 +125,18 @@ func TestSetup(t *testing.T) {
 
 			// Test TemplateFile Paths
 			for tfk, tf := range test.expectedConfig[j].TemplateFiles {
-				if singleConfig.TemplateFiles[tfk].Path != tf.Path {
+				if tf.Path != singleConfig.TemplateFiles[tfk].Path {
 					t.Errorf("Expected TemplateFile Path of %v , got: %v", tf.Path, singleConfig.TemplateFiles[tfk].Path)
 				}
 			}
 
-			// // Test tempate (and/or default) was loaded
-			for ti, tt := range singleConfig.Template.Templates() {
-				if len(test.expectedConfig[j].Template.Templates()) > ti {
-					if tt.Name() != test.expectedConfig[j].Template.Templates()[ti].Name() {
-						t.Errorf("Expected template with %v name, got: %v", test.expectedConfig[j].Template.Templates()[ti].Name(), tt.Name())
-					}
+			// Test tempate (and/or default) was loaded
+			realTemplateNames := collectTemplateNames(singleConfig.Template.Templates())
+			expectedTemplateNames := collectTemplateNames(test.expectedConfig[j].Template.Templates())
+
+			for name, _ := range expectedTemplateNames {
+				if _, ok := realTemplateNames[name]; !ok {
+					t.Errorf("Expected template names to contain %v, but got %v", name, realTemplateNames[name])
 				}
 			}
 
@@ -146,4 +154,14 @@ func buildTemplate(templates map[string]string) *template.Template {
 		stencil.SetTemplate(t, k, v)
 	}
 	return t
+}
+
+func collectTemplateNames(templates []*template.Template) map[string]interface{} {
+	templateNames := make(map[string]interface{})
+	var i interface{}
+	for _, template := range templates {
+		name := template.Name()
+		templateNames[name] = i
+	}
+	return templateNames
 }
