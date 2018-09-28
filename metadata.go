@@ -61,6 +61,7 @@ func (m *Metadata) load(parsedMap map[string]interface{}) {
 	if title, ok := parsedMap["title"]; ok {
 		m.Title, _ = title.(string)
 	}
+	// TODO: make template variable customizable in config
 	if template, ok := parsedMap["template"]; ok {
 		m.Template, _ = template.(string)
 	}
