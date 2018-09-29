@@ -47,19 +47,19 @@ func (n *NoneParser) Type() string {
 	return "None"
 }
 
-// Init prepases and parses the metadata and body
-func (n *NoneParser) Init(b *bytes.Buffer) bool {
+// Parse prepases and parses the metadata and body
+func (n *NoneParser) Parse(b []byte) bool {
 	m := make(map[string]interface{})
 	n.metadata = NewMetadata(m)
-	n.body = bytes.NewBuffer(b.Bytes())
+	n.body = bytes.NewBuffer(b)
 
 	return true
 }
 
 // Parse the metadata
-func (n *NoneParser) Parse(b []byte) ([]byte, error) {
-	return nil, nil
-}
+// func (n *NoneParser) Parse(b []byte) ([]byte, error) {
+// 	return nil, nil
+// }
 
 // Metadata returns parsed metadata.  It should be called
 // only after a call to Parse returns without error.

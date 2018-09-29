@@ -36,6 +36,7 @@ package metadata
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 )
 
 // Metadata stores a page's metadata
@@ -79,7 +80,7 @@ func (m *Metadata) load(parsedMap map[string]interface{}) {
 // Parser is a an interface that must be satisfied by each parser
 type Parser interface {
 	// Initialize a parser
-	Init(b *bytes.Buffer) bool
+	Parse(b []byte) bool
 
 	// Type of metadata
 	Type() string
@@ -92,10 +93,19 @@ type Parser interface {
 }
 
 // GetParser returns a parser for the given data
-func GetParser(buf []byte) Parser {
+func GetParser(by []byte) Parser {
+	// If the whole document is valid JSON, use JustJSON Parser
+	isValidJSON := json.Valid(by)
+	if isValidJSON {
+		p := &ValidJSONParser{}
+		if p.Parse(by) {
+			return p
+		}
+	}
+
+	// If non-JSON document with or without front matter
 	for _, p := range parsers() {
-		b := bytes.NewBuffer(buf)
-		if p.Init(b) {
+		if p.Parse(by) {
 			return p
 		}
 	}
@@ -105,6 +115,7 @@ func GetParser(buf []byte) Parser {
 
 // parsers returns all available parsers
 func parsers() []Parser {
+
 	return []Parser{
 		&TOMLParser{},
 		&YAMLParser{},

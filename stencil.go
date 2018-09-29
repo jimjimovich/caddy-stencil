@@ -119,7 +119,7 @@ func (st Stencil) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error)
 	// pass request up the chain to let another middleware provide us content
 	// this will most likely come from staticfiles or proxy
 	code, err := st.Next.ServeHTTP(rb, r)
-	if !rb.Buffered() || err != nil {
+	if !rb.Buffered() || code >= 300 || err != nil {
 		return code, err
 	}
 

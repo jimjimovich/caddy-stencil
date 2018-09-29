@@ -49,8 +49,9 @@ func (t *TOMLParser) Type() string {
 	return "TOML"
 }
 
-// Init prepares and parses the metadata and body
-func (t *TOMLParser) Init(b *bytes.Buffer) bool {
+// Parse prepares and parses the metadata and body
+func (t *TOMLParser) Parse(by []byte) bool {
+	b := bytes.NewBuffer(by)
 	meta, data := splitBuffer(b, "+++")
 	if meta == nil || data == nil {
 		return false

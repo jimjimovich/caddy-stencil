@@ -49,8 +49,9 @@ func (y *YAMLParser) Type() string {
 	return "YAML"
 }
 
-// Init prepares the metadata parser for parsing.
-func (y *YAMLParser) Init(b *bytes.Buffer) bool {
+// Parse prepares the metadata parser for parsing.
+func (y *YAMLParser) Parse(by []byte) bool {
+	b := bytes.NewBuffer(by)
 	meta, data := splitBuffer(b, "---")
 	if meta == nil || data == nil {
 		return false
