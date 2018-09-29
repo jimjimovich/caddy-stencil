@@ -38,7 +38,7 @@ import (
 	"encoding/json"
 )
 
-// ValidJSONParser is the MetadataParser for JSON
+// ValidJSONParser is the Parser for already validated JSON
 type ValidJSONParser struct {
 	metadata Metadata
 	body     *bytes.Buffer
@@ -49,7 +49,7 @@ func (j *ValidJSONParser) Type() string {
 	return "ValidJSON"
 }
 
-// Init prepares the metadata metadata/body file and parses it
+// Parse processes JSON and adds it to j.metadata. j.body is set to nil.
 func (j *ValidJSONParser) Parse(by []byte) bool {
 	// Figure out if this starts with an [ or { to see if an array
 	var isArray = false
@@ -84,7 +84,9 @@ func (j *ValidJSONParser) Parse(by []byte) bool {
 		j.body = bytes.NewBuffer(nil)
 		return true
 	} else {
-		mdata := NewMetadata(data)
+		metaMap := make(map[string]interface{})
+		metaMap["data"] = data
+		mdata := NewMetadata(metaMap)
 		j.metadata = mdata
 		j.body = bytes.NewBuffer(nil)
 		return true

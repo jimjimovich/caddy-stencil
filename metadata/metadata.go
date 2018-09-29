@@ -94,7 +94,7 @@ type Parser interface {
 
 // GetParser returns a parser for the given data
 func GetParser(by []byte) Parser {
-	// If the whole document is valid JSON, use JustJSON Parser
+	// If the whole document is valid JSON, use ValidJSONParser
 	isValidJSON := json.Valid(by)
 	if isValidJSON {
 		p := &ValidJSONParser{}
@@ -103,7 +103,8 @@ func GetParser(by []byte) Parser {
 		}
 	}
 
-	// If non-JSON document with or without front matter
+	// If non-valid JSON document or other document with or without front matter
+	// try all the other parsers in order to find a match
 	for _, p := range parsers() {
 		if p.Parse(by) {
 			return p
