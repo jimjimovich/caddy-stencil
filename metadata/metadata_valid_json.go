@@ -39,6 +39,8 @@ import (
 )
 
 // ValidJSONParser is the Parser for already validated JSON
+// Thought this was needed to process arrays and numbers correctly
+// But seems like it's not needed.
 type ValidJSONParser struct {
 	metadata Metadata
 	body     *bytes.Buffer
@@ -53,13 +55,13 @@ func (j *ValidJSONParser) Type() string {
 func (j *ValidJSONParser) Parse(by []byte) bool {
 	// Figure out if this starts with an [ or { to see if an array
 	var isArray = false
-	
-	if by[0] == bytes.TrimSpace([]byte("["))[0] {
+
+	if bytes.TrimSpace(by)[0] == []byte("[")[0] {
 		isArray = true
 	}
-	
+
 	r := bytes.NewBuffer(by)
-	
+
 	var arrayData interface{}
 	var data map[string]interface{}
 
@@ -91,7 +93,7 @@ func (j *ValidJSONParser) Parse(by []byte) bool {
 		j.body = bytes.NewBuffer(nil)
 		return true
 	}
-	
+
 	return false
 }
 

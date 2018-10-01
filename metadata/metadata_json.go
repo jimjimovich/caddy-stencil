@@ -72,7 +72,9 @@ func (j *JSONParser) Parse(by []byte) bool {
 		}
 	}
 
-	j.metadata = NewMetadata(m)
+	metaMap := make(map[string]interface{})
+	metaMap["data"] = m
+	j.metadata = NewMetadata(metaMap)
 	j.body = bytes.NewBuffer(b.Bytes())
 
 	return true
