@@ -62,7 +62,9 @@ func (t *TOMLParser) Parse(by []byte) bool {
 	if err := toml.Unmarshal(meta.Bytes(), &m); err != nil {
 		return false
 	}
-	t.metadata = NewMetadata(m)
+	metaMap := make(map[string]interface{})
+	metaMap["data"] = m
+	t.metadata = NewMetadata(metaMap)
 
 	return true
 }

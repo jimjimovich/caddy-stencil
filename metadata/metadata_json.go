@@ -51,33 +51,81 @@ func (j *JSONParser) Type() string {
 
 // Parse prepares the metadata metadata/body file and parses it
 func (j *JSONParser) Parse(by []byte) bool {
-	b := bytes.NewBuffer(by)
-	m := make(map[string]interface{})
+	// Figure out if this starts with an [ or { to see if an array
+	var isArray = false
+	if bytes.TrimSpace(by)[0] == []byte("[")[0] {
+		isArray = true
+	}
 
-	err := json.Unmarshal(b.Bytes(), &m)
-	if err != nil {
-		var offset int
+	var arrayData interface{}
+	var data map[string]interface{}
 
-		jerr, ok := err.(*json.SyntaxError)
-		if !ok {
-			return false
-		}
+	buf := bytes.NewBuffer(by)
 
-		offset = int(jerr.Offset)
-
-		m = make(map[string]interface{})
-		err = json.Unmarshal(b.Next(offset-1), &m)
+	// If we have a JSON array, we should have valid JSON from an API with no body
+	if isArray {
+		err := json.Unmarshal(buf.Bytes(), &arrayData)
 		if err != nil {
 			return false
 		}
+		metaMap := make(map[string]interface{})
+		metaMap["data"] = arrayData
+		mdata := NewMetadata(metaMap)
+		j.metadata = mdata
+		j.body = bytes.NewBuffer(nil)
+		return true
+	} else {
+		// JSON starting with "{", may be JSON document or regular document with
+		// JSON front matter
+		err := json.Unmarshal(buf.Bytes(), &data)
+		if err != nil {
+			var offset int
+
+			jerr, ok := err.(*json.SyntaxError)
+			if !ok {
+				return false
+			}
+
+			offset = int(jerr.Offset)
+
+			err = json.Unmarshal(buf.Next(offset-1), &data)
+			if err != nil {
+				return false
+			}
+		}
+
+		metaMap := make(map[string]interface{})
+		metaMap["data"] = data
+		mdata := NewMetadata(metaMap)
+		j.metadata = mdata
+		j.body = bytes.NewBuffer(buf.Bytes())
+		return true
 	}
 
-	metaMap := make(map[string]interface{})
-	metaMap["data"] = m
-	j.metadata = NewMetadata(metaMap)
-	j.body = bytes.NewBuffer(b.Bytes())
+	// err := json.Unmarshal(b.Bytes(), &m)
+	// if err != nil {
+	// 	var offset int
 
-	return true
+	// 	jerr, ok := err.(*json.SyntaxError)
+	// 	if !ok {
+	// 		return false
+	// 	}
+
+	// 	offset = int(jerr.Offset)
+
+	// 	m = make(map[string]interface{})
+	// 	err = json.Unmarshal(b.Next(offset-1), &m)
+	// 	if err != nil {
+	// 		return false
+	// 	}
+	// }
+
+	// metaMap := make(map[string]interface{})
+	// metaMap["data"] = m
+	// j.metadata = NewMetadata(metaMap)
+	// j.body = bytes.NewBuffer(b.Bytes())
+
+	// return true
 }
 
 // Metadata returns parsed metadata.  It should be called

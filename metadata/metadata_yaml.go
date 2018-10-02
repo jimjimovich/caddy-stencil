@@ -62,7 +62,10 @@ func (y *YAMLParser) Parse(by []byte) bool {
 	if err := yaml.Unmarshal(meta.Bytes(), &m); err != nil {
 		return false
 	}
-	y.metadata = NewMetadata(m)
+
+	metaMap := make(map[string]interface{})
+	metaMap["data"] = m
+	y.metadata = NewMetadata(metaMap)
 
 	return true
 }

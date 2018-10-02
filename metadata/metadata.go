@@ -36,7 +36,7 @@ package metadata
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
+	"fmt"
 )
 
 // Metadata stores a page's metadata
@@ -64,14 +64,16 @@ func NewMetadata(parsedMap map[string]interface{}) Metadata {
 // load loads parsed values in parsedMap into Metadata
 func (m *Metadata) load(parsedMap map[string]interface{}) {
 
-	// Pull top level things out
-	if title, ok := parsedMap["title"]; ok {
-		m.Title, _ = title.(string)
-	}
+	// Pull top level things out of data
+	if data, ok := parsedMap["data"].(map[string]interface{}); ok {
+		if title, ok := data["title"]; ok {
+			m.Title, _ = title.(string)
+		}
 
-	// TODO: make template variable customizable in config
-	if template, ok := parsedMap["template"]; ok {
-		m.Template, _ = template.(string)
+		// TODO: make template variable customizable in config
+		if template, ok := data["template"]; ok {
+			m.Template, _ = template.(string)
+		}
 	}
 
 	m.Variables = parsedMap
@@ -94,22 +96,91 @@ type Parser interface {
 
 // GetParser returns a parser for the given data
 func GetParser(by []byte) Parser {
-	// If the whole document is valid JSON, use ValidJSONParser
-	isValidJSON := json.Valid(by)
-	if isValidJSON {
-		p := &ValidJSONParser{}
+	// Get first characters of document to give us a clue about the type
+	firstByte := bytes.TrimSpace(by)[0]
+
+	switch firstByte {
+	// First byte looks like JSON
+	case []byte("{")[0], []byte("[")[0]:
+		fmt.Println("possible JSON")
+		p := &JSONParser{}
 		if p.Parse(by) {
 			return p
+		} else {
+			n := &NoneParser{}
+			if n.Parse(by) {
+				return n
+			}
 		}
+
+	// First byte looks like YAML
+	case []byte("-")[0]:
+		fmt.Println("possible YAML")
+		p := &YAMLParser{}
+		if p.Parse(by) {
+			return p
+		} else {
+			n := &NoneParser{}
+			if n.Parse(by) {
+				return n
+			}
+		}
+	// First byte looks like TOML
+	case []byte("+")[0]:
+		fmt.Println("possible TOML")
+		p := &TOMLParser{}
+		if p.Parse(by) {
+			return p
+		} else {
+			n := &NoneParser{}
+			if n.Parse(by) {
+				return n
+			}
+		}
+
+	// First byte looks like regular document
+	default:
+		fmt.Println("Nothing special")
+		n := &NoneParser{}
+		if n.Parse(by) {
+			return n
+		}
+
+		return nil
 	}
+
+	// If looks like JSON, send to JSON parser
+	// if firstBytes[0] == []byte("{")[0] || firstBytes[0] == []byte("[")[0] {
+	// 	fmt.Println("JSON")
+
+	// } else if firstBytes[0] == []byte("-")[0] || firstBytes[0] == []byte("+")[0] {
+	// 	// Not JSON or JSON Front Matter, try others
+	// 	firstString := string(firstBytes)
+	// 	if firstString == "---" {
+	// 		fmt.Println("YAML")
+	// 	} else if firstString == "+++" {
+	// 		fmt.Println("TOML")
+	// 	}
+	// } else {
+	// 	fmt.Println("No idea")
+	// }
+
+	// If the whole document is valid JSON, use ValidJSONParser
+	// isValidJSON := json.Valid(by)
+	// if isValidJSON {
+	// 	p := &ValidJSONParser{}
+	// 	if p.Parse(by) {
+	// 		return p
+	// 	}
+	// }
 
 	// If non-valid JSON document or other document with or without front matter
 	// try all the other parsers in order to find a match
-	for _, p := range parsers() {
-		if p.Parse(by) {
-			return p
-		}
-	}
+	// for _, p := range parsers() {
+	// 	if p.Parse(by) {
+	// 		return p
+	// 	}
+	// }
 
 	return nil
 }

@@ -34,7 +34,6 @@
 package metadata
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 	"testing"
@@ -182,17 +181,20 @@ Page content
 }
 
 func TestParsers(t *testing.T) {
+	VaraiblesData := map[string]interface{}{
+		"name":     "value",
+		"title":    "A title",
+		"template": "default",
+		"number":   1410,
+		"float":    1410.07,
+		"positive": true,
+		"negative": false,
+	}
 	expected := Metadata{
 		Title:    "A title",
 		Template: "default",
 		Variables: map[string]interface{}{
-			"name":     "value",
-			"title":    "A title",
-			"template": "default",
-			"number":   1410,
-			"float":    1410.07,
-			"positive": true,
-			"negative": false,
+			"data": VaraiblesData,
 		},
 	}
 	compare := func(m Metadata) bool {
@@ -202,13 +204,21 @@ func TestParsers(t *testing.T) {
 		if m.Template != expected.Template {
 			return false
 		}
-		for k, v := range m.Variables {
-			if fmt.Sprintf("%v", v) != fmt.Sprintf("%v", expected.Variables[k]) {
+		data, ok := m.Variables["data"].(map[string]interface{})
+		if !ok {
+			return false
+		}
+		expectedData, ok := expected.Variables["data"].(map[string]interface{})
+		if !ok {
+			return false
+		}
+		for k, v := range data {
+			if fmt.Sprintf("%v", v) != fmt.Sprintf("%v", expectedData[k]) {
 				return false
 			}
 		}
 
-		varLenOK := len(m.Variables) == len(expected.Variables)
+		varLenOK := len(data) == len(expectedData)
 		return varLenOK
 	}
 
@@ -224,20 +234,20 @@ func TestParsers(t *testing.T) {
 
 	for _, v := range data {
 		// metadata without identifiers
-		if v.parser.Init(bytes.NewBufferString(v.testData[0])) {
+		if v.parser.Parse([]byte(v.testData[0])) {
 			t.Fatalf("Expected error for invalid metadata for %v", v.name)
 		}
 
 		// metadata with identifiers
-		if !v.parser.Init(bytes.NewBufferString(v.testData[1])) {
+		if !v.parser.Parse([]byte(v.testData[1])) {
 			t.Fatalf("Metadata failed to initialize, type %v", v.parser.Type())
 		}
-		md := v.parser.Body()
+		body := v.parser.Body()
 		if !compare(v.parser.Metadata()) {
 			t.Fatalf("Expected %v, found %v for %v", expected, v.parser.Metadata(), v.name)
 		}
-		if "Page content" != strings.TrimSpace(string(md)) {
-			t.Fatalf("Expected %v, found %v for %v", "Page content", string(md), v.name)
+		if "Page content" != strings.TrimSpace(string(body)) {
+			t.Fatalf("Expected %v, found %v for %v", "Page content", string(body), v.name)
 		}
 		// Check that we find the correct metadata parser type
 		if p := GetParser([]byte(v.testData[1])); p.Type() != v.name {
@@ -245,17 +255,17 @@ func TestParsers(t *testing.T) {
 		}
 
 		// metadata without closing identifier
-		if v.parser.Init(bytes.NewBufferString(v.testData[2])) {
+		if v.parser.Parse([]byte(v.testData[2])) {
 			t.Fatalf("Expected error for missing closing identifier for %v parser", v.name)
 		}
 
 		// invalid metadata
-		if v.parser.Init(bytes.NewBufferString(v.testData[3])) {
+		if v.parser.Parse([]byte(v.testData[3])) {
 			t.Fatalf("Expected error for invalid metadata for %v", v.name)
 		}
 
 		// front matter but no body
-		if !v.parser.Init(bytes.NewBufferString(v.testData[4])) {
+		if !v.parser.Parse([]byte(v.testData[4])) {
 			t.Fatalf("Unexpected error for valid metadata but no body for %v", v.name)
 		}
 	}
