@@ -101,31 +101,6 @@ func (j *JSONParser) Parse(by []byte) bool {
 		j.body = bytes.NewBuffer(buf.Bytes())
 		return true
 	}
-
-	// err := json.Unmarshal(b.Bytes(), &m)
-	// if err != nil {
-	// 	var offset int
-
-	// 	jerr, ok := err.(*json.SyntaxError)
-	// 	if !ok {
-	// 		return false
-	// 	}
-
-	// 	offset = int(jerr.Offset)
-
-	// 	m = make(map[string]interface{})
-	// 	err = json.Unmarshal(b.Next(offset-1), &m)
-	// 	if err != nil {
-	// 		return false
-	// 	}
-	// }
-
-	// metaMap := make(map[string]interface{})
-	// metaMap["data"] = m
-	// j.metadata = NewMetadata(metaMap)
-	// j.body = bytes.NewBuffer(b.Bytes())
-
-	// return true
 }
 
 // Metadata returns parsed metadata.  It should be called

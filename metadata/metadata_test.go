@@ -45,7 +45,7 @@ func check(t *testing.T, err error) {
 	}
 }
 
-var TOML = [5]string{`
+var TOML = []string{`
 title = "A title"
 template = "default"
 name = "value"
@@ -87,7 +87,7 @@ float = 1410.07
 `,
 }
 
-var YAML = [5]string{`
+var YAML = []string{`
 title : A title
 template : default
 name : value
@@ -127,7 +127,7 @@ float : 1410.07
 `,
 }
 
-var JSON = [5]string{`
+var JSON = []string{`
 	"title" : "A title",
 	"template" : "default",
 	"name" : "value",
@@ -224,7 +224,7 @@ func TestParsers(t *testing.T) {
 
 	data := []struct {
 		parser   Parser
-		testData [5]string
+		testData []string
 		name     string
 	}{
 		{&JSONParser{}, JSON, "JSON"},
@@ -242,13 +242,16 @@ func TestParsers(t *testing.T) {
 		if !v.parser.Parse([]byte(v.testData[1])) {
 			t.Fatalf("Metadata failed to initialize, type %v", v.parser.Type())
 		}
+
 		body := v.parser.Body()
-		if !compare(v.parser.Metadata()) {
-			t.Fatalf("Expected %v, found %v for %v", expected, v.parser.Metadata(), v.name)
-		}
 		if "Page content" != strings.TrimSpace(string(body)) {
 			t.Fatalf("Expected %v, found %v for %v", "Page content", string(body), v.name)
 		}
+
+		if !compare(v.parser.Metadata()) {
+			t.Fatalf("Expected %v, found %v for %v", expected, v.parser.Metadata(), v.name)
+		}
+
 		// Check that we find the correct metadata parser type
 		if p := GetParser([]byte(v.testData[1])); p.Type() != v.name {
 			t.Fatalf("Wrong parser found, expected %v, found %v", v.name, p.Type())
@@ -268,6 +271,20 @@ func TestParsers(t *testing.T) {
 		if !v.parser.Parse([]byte(v.testData[4])) {
 			t.Fatalf("Unexpected error for valid metadata but no body for %v", v.name)
 		}
+	}
+}
+
+func TestJSONArray(t *testing.T) {
+	input := `[
+	{"title" : "A title"},
+	{"title" : "A second title"}
+	]
+	`
+
+	parser := &JSONParser{}
+
+	if !parser.Parse([]byte(input)) {
+		t.Fatalf("Couldn't parse JSON array")
 	}
 }
 
