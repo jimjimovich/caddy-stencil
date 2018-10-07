@@ -95,6 +95,15 @@ type Parser interface {
 
 // GetParser returns a parser for the given data
 func GetParser(by []byte) Parser {
+	// If no bytes are passed, return NoParser with empty input
+	// TODO: get rid of this and test existence of byte before calling this function
+	if len(by) == 0 {
+		n := &NoneParser{}
+		if n.Parse([]byte("")) {
+			return n
+		}
+	}
+
 	// Get first characters of document to give us a clue about the type
 	firstByte := bytes.TrimSpace(by)[0]
 
