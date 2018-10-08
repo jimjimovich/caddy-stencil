@@ -88,6 +88,24 @@ func TestStencil(t *testing.T) {
 			"/index.html",
 			"/index_expected.html",
 		},
+		{
+			"./testdata/problem_files",
+			`stencil / {
+				template ./testdata/problem_files/template.html
+			}
+			`,
+			"/badjson.html",
+			"/badjson_expected.html",
+		},
+		{
+			"./testdata/problem_files",
+			`stencil / {
+				template ./testdata/problem_files/template.html
+			}
+			`,
+			"/badyaml.html",
+			"/badyaml_expected.html",
+		},
 	}
 
 	for _, test := range tests {
