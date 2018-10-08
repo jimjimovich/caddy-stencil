@@ -1,6 +1,6 @@
 ## Caddy Stencil
 
-**Stencil is currently NOT stable (or even working!!!) and not recommended for use in production!**
+**Stencil is currently not stable and not recommended for use in production!**
 
 Stencil is a templating middleware for Caddy server. Stencil can process three types of input: raw HTML (or any other text-based format), raw HTML with JSON, YAML or TOML front matter, and valid JSON documents. Input can be from files or the output of another directive such as the [Proxy directive](https://caddyserver.com/docs/proxy).
 
