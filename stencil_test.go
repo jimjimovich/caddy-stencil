@@ -20,8 +20,9 @@ package stencil_test
 import (
 	"context"
 	"fmt"
+	"strings"
 	//"io"
-	//"io/ioutil"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -34,53 +35,103 @@ import (
 
 func TestStencil(t *testing.T) {
 
-	const (
-		templateFile = "./testdata/template.html"
-		siteRoot     = "./testdata"
-	)
-
-	input := `
-
-			root ` + siteRoot + `
-			stencil / {
-				template ` + templateFile + `
+	tests := []struct {
+		siteRoot     string
+		inputConfig  string
+		getPath      string
+		expectedFile string
+	}{
+		{
+			"./testdata/json",
+			`stencil / {
+				ext .json
+				template ./testdata/json/template.html
 			}
-		`
-
-	// fmt.Println(input)
-
-	c := caddy.NewTestController("http", input)
-	err := stencil.Setup(c)
-	if err != nil {
-		t.Fatalf("Something went wrong loading the controller: %v\n", err)
+			`,
+			"/44418.json",
+			"/44418_expected.html",
+		},
+		{
+			"./testdata/json",
+			`stencil / {
+				ext .json
+				template ./testdata/json/template.html
+			}
+			`,
+			"/search.json",
+			"/search_expected.html",
+		},
+		{
+			"./testdata/json_frontmatter",
+			`stencil / {
+				template ./testdata/json_frontmatter/template.html
+			}
+			`,
+			"/index.html",
+			"/index_expected.html",
+		},
+		{
+			"./testdata/yaml_frontmatter",
+			`stencil / {
+				template ./testdata/yaml_frontmatter/template.html
+			}
+			`,
+			"/index.html",
+			"/index_expected.html",
+		},
+		{
+			"./testdata/toml_frontmatter",
+			`stencil / {
+				template ./testdata/toml_frontmatter/template.html
+			}
+			`,
+			"/index.html",
+			"/index_expected.html",
+		},
 	}
 
-	mids := httpserver.GetConfig(c).Middleware()
-	handler := mids[0](httpserver.EmptyNext).(stencil.Stencil)
+	for _, test := range tests {
+		c := caddy.NewTestController("http", test.inputConfig)
+		err := stencil.Setup(c)
+		if err != nil {
+			t.Fatalf("Something went wrong loading the controller: %v\n", err)
+		}
 
-	// fmt.Printf("handler: %v\n", handler.Configs[0])
-	// fmt.Printf("TemplateFiles: %v\n", handler.Configs[0].Template)
-	// fmt.Printf("Next: %v\n", handler.Next)
-	handler.Next = staticfiles.FileServer{Root: http.Dir(siteRoot)}
+		mids := httpserver.GetConfig(c).Middleware()
+		handler := mids[0](httpserver.EmptyNext).(stencil.Stencil)
+		handler.Next = staticfiles.FileServer{Root: http.Dir(test.siteRoot)}
 
-	req, err := http.NewRequest("GET", "/index.html", nil)
-	if err != nil {
-		t.Fatalf("Could not create HTTP request: %v", err)
+		req, err := http.NewRequest("GET", test.getPath, nil)
+		if err != nil {
+			t.Fatalf("Could not create HTTP request: %v", err)
+		}
+
+		req = req.WithContext(context.WithValue(req.Context(), httpserver.OriginalURLCtxKey, *req.URL))
+
+		rec := httptest.NewRecorder()
+		_, err = handler.ServeHTTP(rec, req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		respBody := rec.Body
+		expectedBody := expected(test.siteRoot + test.expectedFile)
+
+		got := strings.TrimSpace(respBody.String())
+		expected := strings.TrimSpace(string(expectedBody))
+
+		if got != expected {
+			t.Fatalf("Expected:\n %v\n Got:\n %v\n", expected, got)
+		}
 	}
 
-	req = req.WithContext(context.WithValue(req.Context(), httpserver.OriginalURLCtxKey, *req.URL))
+}
 
-	// fmt.Println(req)
-
-	rec := httptest.NewRecorder()
-	_, err = handler.ServeHTTP(rec, req)
+func expected(filename string) []byte {
+	b, err := ioutil.ReadFile(filename)
 	if err != nil {
-		t.Fatal(err)
+		fmt.Print(err)
 	}
 
-	// fmt.Println(rec.Code)
-	// fmt.Printf("%v\n", rec.Header().Get("Content-Type"))
-	respBody := rec.Body.String()
-	fmt.Printf("%v\n", respBody)
-
+	return b
 }

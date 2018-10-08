@@ -49,7 +49,7 @@ type Config struct {
 	// Base path to match
 	PathScope string
 
-	// List of extensions to consider as markdown files
+	// List of extensions to consider as stencil files
 	Extensions map[string]struct{}
 
 	// Template(s) to render with
@@ -93,7 +93,7 @@ func (st Stencil) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error)
 
 	// only buffer the response when we want to execute a stencil
 	shouldBuf := func(status int, header http.Header) bool {
-		// see if this request matches a markdown extension
+		// see if this request matches a stencil extension
 		reqExt := path.Ext(fpath)
 		for ext := range cfg.Extensions {
 			// do not buffer if redirect or error

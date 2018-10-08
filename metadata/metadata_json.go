@@ -98,7 +98,11 @@ func (j *JSONParser) Parse(by []byte) bool {
 		metaMap["data"] = data
 		mdata := NewMetadata(metaMap)
 		j.metadata = mdata
-		j.body = bytes.NewBuffer(buf.Bytes())
+		if err == nil {
+			j.body = bytes.NewBuffer(nil)
+		} else {
+			j.body = bytes.NewBuffer(buf.Bytes())
+		}
 		return true
 	}
 }
