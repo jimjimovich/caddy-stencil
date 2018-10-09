@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Adapted from the Caddy Markdown plugin by Light Code Labs, LLC.
+// Adapted from the Caddy markdown plugin by Light Code Labs, LLC.
+// https://github.com/mholt/caddy/tree/master/caddyhttp/markdown
 // Significant modifications have been made.
 //
 // Original License
@@ -154,19 +155,6 @@ func GetParser(by []byte) Parser {
 	}
 
 	return nil
-}
-
-// parsers returns all available parsers
-func parsers() []Parser {
-
-	return []Parser{
-		&TOMLParser{},
-		&YAMLParser{},
-		&JSONParser{},
-
-		// This one must be last
-		&NoneParser{},
-	}
 }
 
 // Split out prefixed/suffixed metadata with given delimiter

@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Adapted from the Caddy Markdown plugin by Light Code Labs, LLC.
+// Adapted from the Caddy markdown plugin by Light Code Labs, LLC.
+// https://github.com/mholt/caddy/tree/master/caddyhttp/markdown
 //
 // Original License
 //

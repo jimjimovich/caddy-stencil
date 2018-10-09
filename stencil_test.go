@@ -106,6 +106,16 @@ func TestStencil(t *testing.T) {
 			"/badyaml.html",
 			"/badyaml_expected.html",
 		},
+		{
+			"./testdata/json_frontmatter",
+			`stencil / {
+				template ./testdata/json_frontmatter/template.html
+				template alternate ./testdata/json_frontmatter/alternate.html
+			}
+			`,
+			"/alt.html",
+			"/alt_expected.html",
+		},
 	}
 
 	for _, test := range tests {

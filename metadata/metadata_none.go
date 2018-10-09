@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Adapted from the Caddy Markdown plugin by Light Code Labs, LLC.
+// Adapted from the Caddy markdown plugin by Light Code Labs, LLC.
+// https://github.com/mholt/caddy/tree/master/caddyhttp/markdown
 //
 // Original License
 //
@@ -55,11 +56,6 @@ func (n *NoneParser) Parse(b []byte) bool {
 
 	return true
 }
-
-// Parse the metadata
-// func (n *NoneParser) Parse(b []byte) ([]byte, error) {
-// 	return nil, nil
-// }
 
 // Metadata returns parsed metadata.  It should be called
 // only after a call to Parse returns without error.
