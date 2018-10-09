@@ -116,6 +116,16 @@ func TestStencil(t *testing.T) {
 			"/alt.html",
 			"/alt_expected.html",
 		},
+		{
+			"./testdata/json_frontmatter",
+			`stencil / {
+				ext .json
+				template ./testdata/json_frontmatter/template.html
+			}
+			`,
+			"/index.html",
+			"/index.html",
+		},
 	}
 
 	for _, test := range tests {
