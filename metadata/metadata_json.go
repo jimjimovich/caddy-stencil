@@ -50,9 +50,14 @@ func (j *JSONParser) Type() string {
 	return "JSON"
 }
 
-// Parse prepares the metadata metadata/body file and parses it
+// Parse processes the document and prepares the metadata and body
 func (j *JSONParser) Parse(by []byte) bool {
-	// Figure out if this starts with an [ or { to see if an array
+	// Valid JSON arrays may appear in JSON APIs, so we need to deal with them.
+	// JSON arrays should not be used as front matter wihtout being wrapped
+	// in a JSON object { }.  Any non-valid JSON arrays will not be processed
+	// as JSON. The body object for valid JSON arrays is always returned as nil.
+	//
+	// Figure out if this starts with an [ or { to see if an array.
 	var isArray = false
 	if bytes.TrimSpace(by)[0] == []byte("[")[0] {
 		isArray = true
@@ -76,8 +81,8 @@ func (j *JSONParser) Parse(by []byte) bool {
 		j.body = bytes.NewBuffer(nil)
 		return true
 	} else {
-		// JSON starting with "{", may be JSON document or regular document with
-		// JSON front matter
+		// Starts with "{", may be JSON document or another document with JSON
+		// front matter. If valid JSON with no body, body is returned as nil.
 		err := json.Unmarshal(buf.Bytes(), &data)
 		if err != nil {
 			var offset int
@@ -97,6 +102,8 @@ func (j *JSONParser) Parse(by []byte) bool {
 			j.body = bytes.NewBuffer(buf.Bytes())
 
 		} else {
+			// There was no error processing the entire document, so we have
+			// valid JSON. We set the body to nil.
 			j.body = bytes.NewBuffer(nil)
 		}
 
