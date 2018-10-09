@@ -1,7 +1,5 @@
 ## Caddy Stencil
 
-**Stencil is currently not stable and not recommended for use in production!**
-
 Stencil is a templating middleware for Caddy server. Stencil can process three types of input: raw HTML (or any other text-based format), raw HTML with JSON, YAML or TOML front matter, and valid JSON documents. Input can be from files or the output of another directive such as the [Proxy directive](https://caddyserver.com/docs/proxy).
 
 Stencil processes input and runs it through pre-defined templates. Any JSON or front matter data is placed in the .Doc.data variable and the document body is placed in .Doc.body and are available to templates. The entire body of HTML input (without front matter) will is placed in the .Doc.body variable. The variable .Doc.title is either assigned by a root level JSON or front matter entry of "title" or automatically generated based on the file name.
