@@ -334,10 +334,10 @@ Mycket olika byggnader har man i de nordiska rikena: pyramidformiga, kilformiga,
 		if v.pType != p.Type() {
 			t.Fatalf("Wrong parser type, expected %v, got %v", v.pType, p.Type())
 		}
-		md := p.Body()
-		if strings.TrimSpace(string(md)) != strings.TrimSpace(expectedBody) {
+		md := string(p.Body())
+		if strings.TrimSpace(md) != strings.TrimSpace(expectedBody) {
 			t.Log("Provided:", v.testData)
-			t.Log("Returned:", p.Body())
+			t.Log("Returned:", md)
 			t.Fatalf("Error, mismatched body in expected type %v, matched type %v", v.pType, p.Type())
 		}
 	}

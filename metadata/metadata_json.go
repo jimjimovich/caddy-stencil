@@ -93,17 +93,18 @@ func (j *JSONParser) Parse(by []byte) bool {
 			if err != nil {
 				return false
 			}
+
+			j.body = bytes.NewBuffer(buf.Bytes())
+
+		} else {
+			j.body = bytes.NewBuffer(nil)
 		}
 
 		metaMap := make(map[string]interface{})
 		metaMap["data"] = data
 		mdata := NewMetadata(metaMap)
 		j.metadata = mdata
-		if err == nil {
-			j.body = bytes.NewBuffer(nil)
-		} else {
-			j.body = bytes.NewBuffer(buf.Bytes())
-		}
+
 		return true
 	}
 }
